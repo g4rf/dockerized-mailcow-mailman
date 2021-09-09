@@ -11,7 +11,7 @@ There are some guides and projects on the internet, but there are not up to date
 
 After finishing this guide, [mailcow-dockerized](https://github.com/mailcow/mailcow-dockerized) and [docker-mailman](https://github.com/maxking/docker-mailman) will run and *Apache* as a reverse proxy will serve the web frontends.
 
-The System used ist an *Ubuntu 20.04 LTS*.
+The operating system used is an *Ubuntu 20.04 LTS*.
 
 ## Installation
 
@@ -81,7 +81,6 @@ certbot certonly -d MAILCOW_HOSTNAME
 certbot certonly -d MAILMAN_DOMAIN
 ```
 
-
 ### Install *Mailcow* with *Mailman* integration
 
 **install Mailcow**
@@ -90,12 +89,12 @@ Follow the [Mailcow installation](https://mailcow.github.io/mailcow-dockerized-d
 
 **conf Mailcow**
 
-Open `mailcow.conf` (e.g. with `nano`) and alter the following variables:
+This is also **Step 4** in the official *Mailcow installation* (`nano mailcow.conf`). So change to your needs and alter the following variables:
 
 ```
-HTTP_PORT=8080
+HTTP_PORT=18080
 HTTP_BIND=127.0.0.1
-HTTPS_PORT=8443
+HTTPS_PORT=18443
 HTTPS_BIND=127.0.0.1
 
 SKIP_LETS_ENCRYPT=y
@@ -110,8 +109,8 @@ Create the file `/opt/mailcow-dockerized/docker-compose.override.yml` (e.g. with
 
 ```
 version: '2.1'
-services:
 
+services:
   postfix-mailcow:
     volumes:
       - /opt/mailman:/opt/mailman
@@ -126,14 +125,45 @@ recipient_delimiter = +
 unknown_local_recipient_reject_code = 550
 owner_request_special = no
 
-transport_maps =
-    regexp:/opt/mailman/core/var/data/postfix_lmtp
-local_recipient_maps =
-    regexp:/opt/mailman/core/var/data/postfix_lmtp
-relay_domains =
-    regexp:/opt/mailman/core/var/data/postfix_domains
+transport_maps = regexp:/opt/mailman/core/var/data/postfix_lmtp
+local_recipient_maps = regexp:/opt/mailman/core/var/data/postfix_lmtp
+relay_domains = regexp:/opt/mailman/core/var/data/postfix_domains
+```
+oder
+```
+relay_recipient_maps = proxy:mysql:/opt/postfix/conf/sql/mysql_relay_recipient_maps.cf,
+	regexp:/opt/mailman/var/data/postfix_lmtp
+virtual_mailbox_maps = proxy:mysql:/opt/postfix/conf/sql/mysql_virtual_mailbox_maps.cf,
+	regexp:/opt/mailman/var/data/postfix_lmtp
+transport_maps = pcre:/opt/postfix/conf/custom_transport.pcre,
+  pcre:/opt/postfix/conf/local_transport,
+  proxy:mysql:/opt/postfix/conf/sql/mysql_transport_maps.cf,
+	regexp:/opt/mailman/var/data/postfix_lmtp
+local_recipient_maps = regexp:/opt/mailman/var/data/postfix_lmtp
 ```
 
+**ssl certificates**
+
+As we proxying *Mailcow*, we need to copy the ssl certificates into the *Mailcow* file structure. This task will do the script `renew-ssl.sh` for us:
+
+- copy the file to `/opt/mailcow-dockerized`
+- change **MAILCOW_HOSTNAME** to your *Mailcow* hostname
+- make it executable (`chmod a+x renew-ssl.sh`)
+- run it for the first time: `./renew-ssl.sh`
+
+On the first run it stops *Mailcow*, copies the previously obtained certificates to the correct places and restarts *Mailcow*.
+
+You have to put the script into *cron*, so that new certificates will be copied. Execute as *root* or *sudo*:
+
+```
+crontab -l
+```
+
+To run the script every day at 5am, add:
+
+```
+0   5  *   *   *     /opt/mailcow-dockerized/renew-ssl.sh
+```
 
 ### Install *Mailman*
 
@@ -169,12 +199,7 @@ services:
     - HYPERKITTY_API_KEY=HYPERKITTY_KEY
     - TZ=Europe/Berlin
     - MTA=postfix
-    dns:
-    - 172.22.1.254
-    networks:
-      mailcow-network:
-        aliases:
-          - mailman-core
+    restart: always
 
   mailman-web:
     environment:
@@ -185,30 +210,13 @@ services:
     - SERVE_FROM_DOMAIN=MAILMAN_DOMAIN # e.g. lists.example.org
     - MAILMAN_ADMIN_USER=admin # the admin user
     - MAILMAN_ADMIN_EMAIL=admin@example.org # the admin mail address
-    dns:
-    - 172.22.1.254
-    networks:
-      mailcow-network:
-        aliases:
-          - mailman-web
+    - UWSGI_STATIC_MAP=/static=/opt/mailman-web-data/static
+    restart: always
 
   database:
     environment:
     - POSTGRES_PASSWORD=DBPASS
-    networks:
-      mailcow-network:
-        aliases:
-          - mailman-database
-
-networks:
-  mailcow-network:
-    driver: bridge
-    driver_opts:
-      com.docker.network.bridge.name: br-mailcow
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.22.1.0/24
+    restart: always
 ```
 
 Please read [Mailman-web](https://github.com/maxking/docker-mailman#mailman-web-1) and [Mailman-core](https://github.com/maxking/docker-mailman#mailman-core-1) for further informations.
@@ -223,19 +231,19 @@ default_language: de
 site_owner: mailman@example.org
 ```
 
-Create the file `/opt/mailman/web/ settings_local.py` with the following content. `mailman@example.org` should be pointing to a valid mail box.
+Create the file `/opt/mailman/web/settings_local.py` with the following content. `mailman@example.org` should be pointing to a valid mail box.
 
 ```
 # locale
-LANGUAGE_CODE = 'de-de'
+LANGUAGE_CODE='de-de'
 
 # disable social authentication
-SOCIALACCOUNT_PROVIDERS = {}
+SOCIALACCOUNT_PROVIDERS={}
 
 # change it
 DEFAULT_FROM_EMAIL='mailman@example.org'
 
-DEBUG = false
+DEBUG=False
 ```
 
 
@@ -256,6 +264,8 @@ cd /opt/mailcow-dockerized/
 docker-compose pull
 docker-compose up -d
 ```
+
+**Wait a few minutes!** The containers have to create there databases and config files. This can last up to 1 minute and more.
 
 ## Update
 
