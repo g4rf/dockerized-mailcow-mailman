@@ -125,21 +125,25 @@ recipient_delimiter = +
 unknown_local_recipient_reject_code = 550
 owner_request_special = no
 
-transport_maps = regexp:/opt/mailman/core/var/data/postfix_lmtp
-local_recipient_maps = regexp:/opt/mailman/core/var/data/postfix_lmtp
-relay_domains = regexp:/opt/mailman/core/var/data/postfix_domains
-```
-oder
-```
-relay_recipient_maps = proxy:mysql:/opt/postfix/conf/sql/mysql_relay_recipient_maps.cf,
-	regexp:/opt/mailman/var/data/postfix_lmtp
-virtual_mailbox_maps = proxy:mysql:/opt/postfix/conf/sql/mysql_virtual_mailbox_maps.cf,
-	regexp:/opt/mailman/var/data/postfix_lmtp
-transport_maps = pcre:/opt/postfix/conf/custom_transport.pcre,
+local_recipient_maps =
+  regexp:/opt/mailman/core/var/data/postfix_lmtp,
+  proxy:unix:passwd.byname,
+  $alias_maps
+virtual_mailbox_maps =
+  proxy:mysql:/opt/postfix/conf/sql/mysql_virtual_mailbox_maps.cf,
+  regexp:/opt/mailman/core/var/data/postfix_lmtp
+transport_maps =
+  pcre:/opt/postfix/conf/custom_transport.pcre,
   pcre:/opt/postfix/conf/local_transport,
+  proxy:mysql:/opt/postfix/conf/sql/mysql_relay_ne.cf,
   proxy:mysql:/opt/postfix/conf/sql/mysql_transport_maps.cf,
-	regexp:/opt/mailman/var/data/postfix_lmtp
-local_recipient_maps = regexp:/opt/mailman/var/data/postfix_lmtp
+  regexp:/opt/mailman/core/var/data/postfix_lmtp
+relay_domains =
+  proxy:mysql:/opt/postfix/conf/sql/mysql_virtual_relay_domain_maps.cf,
+  regexp:/opt/mailman/core/var/data/postfix_domains
+relay_recipient_maps =
+  proxy:mysql:/opt/postfix/conf/sql/mysql_relay_recipient_maps.cf,
+  regexp:/opt/mailman/core/var/data/postfix_lmtp
 ```
 
 **ssl certificates**
@@ -156,7 +160,7 @@ On the first run it stops *Mailcow*, copies the previously obtained certificates
 You have to put the script into *cron*, so that new certificates will be copied. Execute as *root* or *sudo*:
 
 ```
-crontab -l
+crontab -e
 ```
 
 To run the script every day at 5am, add:
@@ -235,15 +239,15 @@ Create the file `/opt/mailman/web/settings_local.py` with the following content.
 
 ```
 # locale
-LANGUAGE_CODE='de-de'
+LANGUAGE_CODE = 'de-de'
 
 # disable social authentication
-SOCIALACCOUNT_PROVIDERS={}
+SOCIALACCOUNT_PROVIDERS = {}
 
 # change it
-DEFAULT_FROM_EMAIL='mailman@example.org'
+DEFAULT_FROM_EMAIL = 'mailman@example.org'
 
-DEBUG=False
+DEBUG = False
 ```
 
 
