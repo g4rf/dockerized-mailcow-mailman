@@ -13,6 +13,10 @@ After finishing this guide, [mailcow-dockerized](https://github.com/mailcow/mail
 
 The operating system used is an *Ubuntu 20.04 LTS*.
 
+## Disclaimer
+
+I'm not responsible for any data loss, hardware damage or broken keyboards. This guide comes without any warranty. Make backups before starting, 'coze: **No backup no pity!** 
+
 ## Installation
 
 This guide ist based on different steps:
@@ -114,6 +118,12 @@ services:
   postfix-mailcow:
     volumes:
       - /opt/mailman:/opt/mailman
+    networks:
+      - docker-mailman_mailman
+
+networks:
+  docker-mailman_mailman:
+    external: true
 ```
 
 Create the file `/opt/mailcow-dockerized/data/conf/postfix/extra.cf` (e.g. with `nano`) and add the following lines:
@@ -204,6 +214,8 @@ services:
     - TZ=Europe/Berlin
     - MTA=postfix
     restart: always
+    networks:
+      - mailman
 
   mailman-web:
     environment:
@@ -273,7 +285,11 @@ docker-compose up -d
 
 ## Update
 
+*todo*
+
 ## Backup
+
+*todo*
 
 Mailman:
 https://gitbucket.pgollor.de/docker/mailman-mailcow-integration/blob/master/mailman-backup.sh
