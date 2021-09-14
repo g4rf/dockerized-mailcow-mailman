@@ -294,6 +294,8 @@ cd /opt/mailcow-dockerized
 docker-compose restart postfix-mailcow
 ```
 
+See [issue tracker](https://github.com/g4rf/dockerized-mailcow-mailman/issues/1).
+
 
 ## Update
 
