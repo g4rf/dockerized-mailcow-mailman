@@ -15,7 +15,7 @@ The operating system used is an *Ubuntu 20.04 LTS*.
 
 ## Disclaimer
 
-I'm not responsible for any data loss, hardware damage or broken keyboards. This guide comes without any warranty. Make backups before starting, 'coze: **No backup no pity!** 
+I'm not responsible for any data loss, hardware damage or broken keyboards. This guide comes without any warranty. Make backups before starting, 'coze: **No backup no pity!**
 
 ## Installation
 
@@ -163,9 +163,7 @@ As we proxying *Mailcow*, we need to copy the ssl certificates into the *Mailcow
 - copy the file to `/opt/mailcow-dockerized`
 - change **MAILCOW_HOSTNAME** to your *Mailcow* hostname
 - make it executable (`chmod a+x renew-ssl.sh`)
-- run it for the first time: `./renew-ssl.sh`
-
-On the first run it stops *Mailcow*, copies the previously obtained certificates to the correct places and restarts *Mailcow*.
+- **do not run it yet, as we first need Mailman**
 
 You have to put the script into *cron*, so that new certificates will be copied. Execute as *root* or *sudo*:
 
@@ -235,6 +233,8 @@ services:
     restart: always
 ```
 
+At `mailman-web` fill in correct values for `SERVE_FROM_DOMAIN` (e.g. `lists.example.org`), `MAILMAN_ADMIN_USER` and `MAILMAN_ADMIN_EMAIL`. You need the admin credential to log into the web interface (*Pistorius*). For setting **the password for the first time** use the *Forgot password* function in the web interface.
+
 Please read [Mailman-web](https://github.com/maxking/docker-mailman#mailman-web-1) and [Mailman-core](https://github.com/maxking/docker-mailman#mailman-core-1) for further informations.
 
 **conf Mailman core and Mailman web**
@@ -278,18 +278,31 @@ docker-compose up -d
 
 cd /opt/mailcow-dockerized/
 docker-compose pull
-docker-compose up -d
+./renew-ssl.sh
 ```
 
 **Wait a few minutes!** The containers have to create there databases and config files. This can last up to 1 minute and more.
 
+## Bugs
+
+### New lists aren't recognized by dovecot
+
+When you create a new list and try to send an e-mail, *postfix* responses with `User doesn't exist`, because *postfix* won't deliver it to *Mailman* yet. The configuration at `/opt/mailman/core/var/data/postfix_lmtp` ist updated but not overtaken from *postfix*. The **workaround** is to restart *postifx* manually:
+
+```
+cd /opt/mailcow-dockerized
+docker-compose restart postfix-mailcow
+```
+
+
 ## Update
 
-*todo*
+**Mailcow** has it's own update script in `/opt/mailcow-dockerized/update.sh'. Fruther informations [in the docs](https://mailcow.github.io/mailcow-dockerized-docs/i_u_m_update/).
+
+For **Mailman** just fetch the newest version from the [github repository](https://github.com/maxking/docker-mailman).
 
 ## Backup
 
-*todo*
+**Mailcow** has an own backup script. [Read the docs](https://mailcow.github.io/mailcow-dockerized-docs/b_n_r_backup/) for further informations.
 
-Mailman:
-https://gitbucket.pgollor.de/docker/mailman-mailcow-integration/blob/master/mailman-backup.sh
+**Mailman** won't state backup instructions in the README.md. In the [gitbucket of pgollor](https://gitbucket.pgollor.de/docker/mailman-mailcow-integration/blob/master/mailman-backup.sh) is a script that may be helpful.
