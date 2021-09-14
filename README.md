@@ -285,7 +285,7 @@ docker-compose pull
 
 ## Bugs
 
-### New lists aren't recognized by dovecot
+### New lists aren't recognized by postfix
 
 When you create a new list and try to send an e-mail, *postfix* responses with `User doesn't exist`, because *postfix* won't deliver it to *Mailman* yet. The configuration at `/opt/mailman/core/var/data/postfix_lmtp` ist updated but not overtaken from *postfix*. The **workaround** is to restart *postifx* manually:
 
