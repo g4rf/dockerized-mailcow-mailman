@@ -283,18 +283,16 @@ docker-compose pull
 
 **Wait a few minutes!** The containers have to create there databases and config files. This can last up to 1 minute and more.
 
-## Bugs
+## Remarks
 
-### New lists aren't recognized by postfix
+### New lists aren't recognized by postfix instantly
 
-When you create a new list and try to send an e-mail, *postfix* responses with `User doesn't exist`, because *postfix* won't deliver it to *Mailman* yet. The configuration at `/opt/mailman/core/var/data/postfix_lmtp` ist updated but not overtaken from *postfix*. The **workaround** is to restart *postifx* manually:
+When you create a new list and try to immediately send an e-mail, *postfix* responses with `User doesn't exist`, because *postfix* won't deliver it to *Mailman* yet. The configuration at `/opt/mailman/core/var/data/postfix_lmtp` is not instantly updated. If you need the list instantly, restart *postifx* manually:
 
 ```
 cd /opt/mailcow-dockerized
 docker-compose restart postfix-mailcow
 ```
-
-See [issue tracker](https://github.com/g4rf/dockerized-mailcow-mailman/issues/1).
 
 
 ## Update
