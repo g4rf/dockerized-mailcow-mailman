@@ -256,7 +256,7 @@ Create the file `/opt/mailman/web/settings_local.py` with the following content.
 LANGUAGE_CODE = 'de-de'
 
 # disable social authentication
-SOCIALACCOUNT_PROVIDERS = {}
+MAILMAN_WEB_SOCIAL_AUTH = []
 
 # change it
 DEFAULT_FROM_EMAIL = 'mailman@example.org'
