@@ -117,7 +117,7 @@ version: '2.1'
 services:
   postfix-mailcow:
     volumes:
-      - /opt/mailman:/opt/mailman
+      - /opt/mailman/core/var/data/:/opt/mailman/core/var/data/
     networks:
       - docker-mailman_mailman
 
