@@ -1,8 +1,8 @@
-# Installing Mailcow and Mailman3 based on dockerized versions
+# Installing mailcow and Mailman3 based on dockerized versions
 
 ## Introduction
 
-This guide aims to install and configure [mailcow-dockerized](https://github.com/mailcow/mailcow-dockerized) with [docker-mailman](https://github.com/maxking/docker-mailman) and to provide some useful scripts. An essential condition is, to preserve *Mailcow* and *Mailman* in their own installations for independent updates.
+This guide aims to install and configure [mailcow-dockerized](https://github.com/mailcow/mailcow-dockerized) with [docker-mailman](https://github.com/maxking/docker-mailman) and to provide some useful scripts. An essential condition is, to preserve *mailcow* and *Mailman* in their own installations for independent updates.
 
 There are some guides and projects on the internet, but they are not up to date and/or incomplete in documentation or configuration. This guide is based on the work of:
 
@@ -24,14 +24,14 @@ This guide ist based on different steps:
 1. DNS setup
 1. Install *Apache* as a reverse proxy
 1. Obtain ssl certificates with *Let's Encrypt*
-1. Install *Mailcow* with *Mailman* integration
+1. Install *mailcow* with *Mailman* integration
 1. Install *Mailman*
 1. 🏃 Run
 
 ---
 ### DNS setup
 
-Most of the configuration ist covered by *Mailcow*s [DNS setup](https://mailcow.github.io/mailcow-dockerized-docs/prerequisite-dns/). After finishing this setup add another subdomain for *Mailman*, e.g. `lists.example.org` that points to the same server:
+Most of the configuration ist covered by *mailcow*s [DNS setup](https://mailcow.github.io/mailcow-dockerized-docs/prerequisite-dns/). After finishing this setup add another subdomain for *Mailman*, e.g. `lists.example.org` that points to the same server:
 
 ```
 # Name    Type       Value
@@ -86,15 +86,15 @@ certbot certonly -d MAILCOW_HOSTNAME
 certbot certonly -d MAILMAN_DOMAIN
 ```
 ---
-### Install *Mailcow* with *Mailman* integration
+### Install *mailcow* with *Mailman* integration
 
-#### install Mailcow
+#### install mailcow
 
-Follow the [Mailcow installation](https://docs.mailcow.email/getstarted/install/). **Omit the step »*Start mailcow*« and do _not_ pull and up!**
+Follow the [mailcow installation](https://docs.mailcow.email/getstarted/install/). **Omit the step »*Start mailcow*« and do _not_ pull and up!**
 
-#### configure Mailcow
+#### configure mailcow
 
-Do the step **Initialize mailcow** in the official *Mailcow installation* and change configuration with `nano mailcow.conf` by altering the following variables:
+Do the step **Initialize mailcow** in the official *mailcow installation* and change configuration with `nano mailcow.conf` by altering the following variables:
 
 ```
 HTTP_PORT=18080            # don't use 8080 as mailman needs it
@@ -126,7 +126,7 @@ networks:
   docker-mailman_mailman:
     external: true
 ```
-The additional volume is used by *Mailman* to generate additional config files for *Mailcow postfix*. The external network is build and used by *Mailman*. *Mailcow* needs it to deliver incoming list mails to *Mailman*.
+The additional volume is used by *Mailman* to generate additional config files for *mailcow postfix*. The external network is build and used by *Mailman*. *mailcow* needs it to deliver incoming list mails to *Mailman*.
 
 Create the file `/opt/mailcow-dockerized/data/conf/postfix/extra.cf` (e.g. with `nano`) and add the following lines:
 
@@ -157,14 +157,14 @@ relay_recipient_maps =
   proxy:mysql:/opt/postfix/conf/sql/mysql_relay_recipient_maps.cf,
   regexp:/opt/mailman/core/var/data/postfix_lmtp
 ```
-As we overwrite *Mailcow postfix* configuration here, this step may break your normal mail transports. Check the [original configuration files](https://github.com/mailcow/mailcow-dockerized/tree/master/data/conf/postfix) if anything changed.
+As we overwrite *mailcow postfix* configuration here, this step may break your normal mail transports. Check the [original configuration files](https://github.com/mailcow/mailcow-dockerized/tree/master/data/conf/postfix) if anything changed.
 
 #### ssl certificates
 
-As we proxying *Mailcow*, we need to copy the ssl certificates into the *Mailcow* file structure. This task will do the script [scripts/renew-ssl.sh](scripts/renew-ssl.sh) for us:
+As we proxying *mailcow*, we need to copy the ssl certificates into the *mailcow* file structure. This task will do the script [scripts/renew-ssl.sh](scripts/renew-ssl.sh) for us:
 
 - copy the file to `/opt/mailcow-dockerized`
-- change **MAILCOW_HOSTNAME** to your *Mailcow* hostname
+- change **MAILCOW_HOSTNAME** to your *mailcow* hostname
 - make it executable (`chmod a+x renew-ssl.sh`)
 - **do not run it yet, as we first need Mailman**
 
@@ -300,13 +300,13 @@ docker-compose restart postfix-mailcow
 
 ## Update
 
-**Mailcow** has it's own update script in `/opt/mailcow-dockerized/update.sh', [see the docs](https://mailcow.github.io/mailcow-dockerized-docs/i_u_m_update/).
+**mailcow** has it's own update script in `/opt/mailcow-dockerized/update.sh', [see the docs](https://docs.mailcow.email/maintenance/update/).
 
 For **Mailman** just fetch the newest version from the [github repository](https://github.com/maxking/docker-mailman).
 
 ## Backup
 
-**Mailcow** has an own backup script. [Read the docs](https://mailcow.github.io/mailcow-dockerized-docs/b_n_r_backup/) for further informations.
+**mailcow** has an own backup script. [Read the docs](https://docs.mailcow.email/backup_restore/b_n_r-backup/) for further informations.
 
 **Mailman** won't state backup instructions in the README.md. In the [gitbucket of pgollor](https://gitbucket.pgollor.de/docker/mailman-mailcow-integration/blob/master/mailman-backup.sh) is a script that may be helpful.
 
