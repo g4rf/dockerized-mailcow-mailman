@@ -28,6 +28,7 @@ This guide ist based on different steps:
 1. Install *Mailman*
 1. 🏃 Run
 
+---
 ### DNS setup
 
 Most of the configuration ist covered by *Mailcow*s [DNS setup](https://mailcow.github.io/mailcow-dockerized-docs/prerequisite-dns/). After finishing this setup add another subdomain for *Mailman*, e.g. `lists.example.org` that points to the same server:
@@ -37,7 +38,7 @@ Most of the configuration ist covered by *Mailcow*s [DNS setup](https://mailcow.
 lists     IN A       1.2.3.4
 lists     IN AAAA    dead:beef
 ```
-
+---
 ### Install *Apache* as a reverse proxy
 
 Install *Apache*, e.g. with this guide from *Digital Ocean*: [How To Install the Apache Web Server on Ubuntu 20.04](https://www.digitalocean.com/community/tutorials/how-to-install-the-apache-web-server-on-ubuntu-20-04).
@@ -84,16 +85,16 @@ Get the desired certificates (as *root* or *sudo*):
 certbot certonly -d MAILCOW_HOSTNAME
 certbot certonly -d MAILMAN_DOMAIN
 ```
-
+---
 ### Install *Mailcow* with *Mailman* integration
 
 #### install Mailcow
 
-Follow the [Mailcow installation](https://mailcow.github.io/mailcow-dockerized-docs/i_u_m_install/). **Omit step 5 and do not pull and up with `docker-compose`!**
+Follow the [Mailcow installation](https://docs.mailcow.email/getstarted/install/). **Omit the step »*Start mailcow*« and do _not_ pull and up!**
 
 #### configure Mailcow
 
-This is also **Step 4** in the official *Mailcow installation* (`nano mailcow.conf`). So change to your needs and alter the following variables:
+Do the step **Initialize mailcow** in the official *Mailcow installation* and change configuration with `nano mailcow.conf` by altering the following variables:
 
 ```
 HTTP_PORT=18080            # don't use 8080 as mailman needs it
@@ -178,7 +179,7 @@ To run the script every day at 5am, add:
 ```
 0   5  *   *   *     /opt/mailcow-dockerized/renew-ssl.sh
 ```
-
+---
 ### Install *Mailman*
 
 Basicly follow the instructions at [docker-mailman](https://github.com/maxking/docker-mailman). As they are a lot, here is in a nuthshell what to do:
@@ -265,7 +266,7 @@ DEBUG = False
 ```
 You can change `LANGUAGE_CODE` and `SOCIALACCOUNT_PROVIDERS` to your needs. At the moment `SOCIALACCOUNT_PROVIDERS` has no effect, see [issue #2](https://github.com/g4rf/dockerized-mailcow-mailman/issues/2).
 
-
+---
 ### 🏃 Run
 
 Run (as *root* or *sudo*)
